@@ -1,14 +1,11 @@
 {
-  "name": "koa-util",
+  "name": "node-utility",
   "version": "0.1.0",
-  "description": "",
+  "description": "utility functions/objects frequently used",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "terry.wuhao@gmail.com",
   "license": "MIT",
-  "dependencies": {
-    "mime-types": "^2.1.13"
-  }
 }
