@@ -30,8 +30,6 @@ module.exports = function(stream) {
 		}
 		cache = "";
 		self.emit("data", j);
-	}).on("error", function(e) {
-		self.emit("error", e);
 	});
 
 	self.write = function(obj) {
