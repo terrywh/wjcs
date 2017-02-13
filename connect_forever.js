@@ -22,7 +22,6 @@ function onEnd(self, options) {
 }
 
 function retryConnect(self, options) {
-	console.log("->");
 	self[kConn] = net.connect(options, function() {
 		options.keepAlive && self[kConn].setKeepAlive(true, options.keepAlive);
 		self[kConn].on("end", onEnd.bind(null, self, options));
@@ -67,14 +66,3 @@ function connectForever(options) {
 };
 
 module.exports = connectForever;
-
-// -----------------------------------------------------------------------------
-if(require.main !== module) return;
-
-let o = connectForever({"port": 7472, "host":"10.31.148.25"});
-o.on("retry", function() {
-	console.log("retry connecting ...");
-});
-
-// let o = net.connect(7472, "127.0.0.1");
-// let o = net.createConnection({"port": 7472, "host": "127.0.0.1"});
