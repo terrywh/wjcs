@@ -4,65 +4,65 @@ const net = require("net"),
 	Duplex = require("stream").Duplex;
 
 const
-	kConn  = Symbol("connection"),
-	kExit  = Symbol("exit"),
-	kCache = Symbol("cache"),
-	kStop  = Symbol("stop"),
-	kRetry = Symbol("retry")，
-	kTimeout= Symbol("timeout");
+	kClosed      = Symbol("closed"),
+	kCached      = Symbol("cached"),
+	kStopped     = Symbol("stopped"),
+	kRetryTimeout = Symbol("retryTimout");
 
-function onEnd(self, options) {
-	self[kStop] = true;
-	delete self[kConn];
-	if(!self[kExit]) { // 未标记为退出时，尝试重连
-		self[kRetry]++;
-		self.emit("forever:retry");
-		self[kTimeout] = setTimeout(retryConnect, options.retry || 10000, self, options);
-	}
-}
-
-function retryConnect(self, options) {
-	self[kConn] = net.connect(options, function() {
-		options.keepAlive && self[kConn].setKeepAlive(true, options.keepAlive);
-		self[kConn].on("end", onEnd.bind(null, self, options));
-
-		self[kCache].forEach(function(w) {
-			w.length === 3 ? self[kConn]._writev(w[0], w[1], w[2]) : self[kConn]._write(w[0], w[1]);
-		});
-		self[kCache] = [];
-		self[kStop] = false;
-	});
+function retryForever(socket, options) {
+	socket.emit("retry", options.retry);
+	clearTimeout(socket[kRetryTimeout]);
+	socket[kRetryTimeout] = setTimeout(function() {
+		socket.connect(options);
+	}, options.retry);
 }
 
 function connectForever(options) {
-	let self = new Duplex({
-		objectMode: true,
-		read: function(size) {
-			if(kStop) return null;
-			return self[kConn]._read(size);
-		},
-		write: function(chunk, encoding, callback) {
-			if(kStop) self[kCache].push([chunk, encoding, callback]);
-			else self[kConn]._write(chunk, encoding, callback);
-		},
-		writev: function(chunks, callback) {
-			if(kStop) self[kCache].push([chunks, callback]);
-			else self[kConn]._writev(chunks, callback);
+	let socket = net.createConnection(options),
+		owrite = socket.write;
+	options.retry = options.retry || 10000;
+	socket[kStopped] = true;
+	socket[kCached]  = [];
+	socket[kClosed]  = false;
+	socket.on("connect", function() {
+		let w;
+		while(w = socket[kCached].shift()) {
+			owrite.call(socket, w[0], w[1], w[2]);
 		}
+		socket[kStopped] = false;
+	}).on("end", function() {
+		console.log("end", socket[kClosed]);
+		socket[kStopped] = true;
+		if(socket[kClosed]) return;
+		retryForever(socket, options);
+	}).on("error", function(err) {
+		console.log("error", err.toString(), err.stack);
+		if(socket[kStopped]) { // 连接期间的错误，也要重连
+			retryForever(socket, options);
+		}
+	}).on("close", function(hadErr) {
+		console.log("close", hadErr);
 	});
-	self[kCache] = [];
-	self[kExit]  = false;
-	self[kStop]  = false;
-	self[kEnd]   = self.end;
-	self.end     = function(chunk, encoding, callback) {
-		self[kExit] = true; // 主动断开
-		clearTimeout(self[kTimeout]); // 取消重连
-		if(!self[kStop]) self[kEnd](chunk, encoding, callback);
-		else onEnd(self, options);
+	socket.write = function(data, encoding, callback) {
+		if(socket[kStopped]) socket[kCached].push([data, encoding, callback]);
+		else owrite.call(socket, data, encoding, callback);
 	};
-	retryConnect(self, options);
-
-	return self;
+	socket.close = function(destroy) {
+		socket[kClosed] = true;
+		clearTimeout(socket[kRetryTimeout]); // 停止已经开始的重连
+		if(destory) {
+			socket.destory();
+		}else{
+			socket.end();
+		}
+	};
+	return socket;
 };
 
 module.exports = connectForever;
+// -----------------------------------------------------------------------------
+if(require.main !== module) return;
+let socket = connectForever({"port": 7472, "host":"127.0.0.1", "retry": 2000});
+socket.on("retry", function() {
+	console.log("socket retry ...");
+});
