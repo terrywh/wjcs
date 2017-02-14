@@ -16,3 +16,7 @@ exports.rotateLogger = function(file) {
 exports.localAddress = function() {
 	return require("./local_adress.js")();
 };
+
+exports.connectForever = function(options) {
+	return require("./connect_forever.js")(options);
+};
