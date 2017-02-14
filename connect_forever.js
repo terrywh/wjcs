@@ -1,7 +1,6 @@
 "use strict";
 
-const net = require("net"),
-	Duplex = require("stream").Duplex;
+const net = require("net");
 
 const
 	kClosed      = Symbol("closed"),
