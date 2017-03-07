@@ -33,8 +33,8 @@ module.exports = function(stream) {
 	});
 
 	self.write = function(obj) {
-		if(typeof obj === "object") this[STREAM].write(JSON.stringify(obj) + "\n");
-		else this[STREAM].write(obj);
+		if(typeof obj === "object") stream.write(JSON.stringify(obj) + "\n");
+		else stream.write(obj);
 	};
 	self.end = function(obj) {
 		obj && self.write(obj);
