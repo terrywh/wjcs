@@ -30,17 +30,17 @@ function connectForever(options) {
 		}
 		socket[kStopped] = false;
 	}).on("end", function() {
-		console.log("end", socket[kClosed]);
+		// console.log("end", socket[kClosed]);
 		socket[kStopped] = true;
 		if(socket[kClosed]) return;
 		retryForever(socket, options);
 	}).on("error", function(err) {
-		console.log("error", err.toString(), err.stack);
+		// console.log("error", err.toString(), err.stack);
 		if(socket[kStopped]) { // 连接期间的错误，也要重连
 			retryForever(socket, options);
 		}
 	}).on("close", function(hadErr) {
-		console.log("close", hadErr);
+		// console.log("close", hadErr);
 	});
 	socket.write = function(data, encoding, callback) {
 		if(socket[kStopped]) socket[kCached].push([data, encoding, callback]);
