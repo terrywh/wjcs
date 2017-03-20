@@ -49,7 +49,7 @@ function connectForever(options) {
 	socket.close = function(destroy) {
 		socket[kClosed] = true;
 		clearTimeout(socket[kRetryTimeout]); // 停止已经开始的重连
-		if(destory) {
+		if(destroy) {
 			socket.destory();
 		}else{
 			socket.end();
