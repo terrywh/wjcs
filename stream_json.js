@@ -10,7 +10,7 @@ module.exports = function(stream) {
 		chunk = cache + chunk;
 		while(o < chunk.length && (p = chunk.indexOf("\n", o)) > o ) {
 			try{
-				j = JSON.parse(chunk.substr(o, p+1));
+				j = JSON.parse(chunk.substr(o, p-o));
 			}catch(e){
 				self.emit("error", new Error("illegalJson: " + chunk.substr(o, p+1)));
 				break;
