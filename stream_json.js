@@ -8,7 +8,7 @@ module.exports = function(stream) {
 	stream.on("data", function(chunk) {
 		let o = 0, p = 0, j = null;
 		chunk = cache + chunk;
-		while(p = chunk.indexOf("\n", o)) {
+		while(o < chunk.length && (p = chunk.indexOf("\n", o)) > o ) {
 			try{
 				j = JSON.parse(chunk.substr(o, p+1));
 			}catch(e){
