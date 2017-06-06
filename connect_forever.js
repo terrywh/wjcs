@@ -41,6 +41,7 @@ function connectForever(options) {
 		}
 	}).on("close", function(hadErr) {
 		// console.log("close", hadErr);
+		retryForever(socket, options);
 	});
 	socket.write = function(data, encoding, callback) {
 		if(socket[kStopped]) socket[kCached].push([data, encoding, callback]);
