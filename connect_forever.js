@@ -40,7 +40,8 @@ function connectForever(options) {
 			retryForever(socket, options);
 		}
 	}).on("close", function(hadErr) {
-		// console.log("close", hadErr);
+		socket[kStopped] = true;
+		if(socket[kClosed]) return;
 		retryForever(socket, options);
 	});
 	socket.write = function(data, encoding, callback) {
