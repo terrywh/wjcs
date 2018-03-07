@@ -18,11 +18,26 @@ module.exports = function(www) {
 		let status = 302, file = www + path.resolve(www, ctx.path);
 		while(status === 302) {
 			status = await new Promise((resolve, reject) => {
-				fs.stat(file, function(error, stats) {
-					resolve(error ? (error.code === "ENOENT" ? 404 : 403) : (stats.isDirectory()? 302 : 200) );
+				fs.stat(file, function(err, stats) {
+					if(err) {
+						if(err.code === "ENOENT") resolve(404);
+						else resolve(403);
+					}else if(stats.isDirectory()) {
+						resolve(302);
+					}else{
+						ctx.lastModified = stats.mtime;
+						if(Date.parse(ctx.headers["if-modified-since"]) < ctx.lastModified.getTime()) {
+							resolve(200);
+						}else{
+							resolve(304);
+						}
+					}
 				});
 			});
-			if(status === 302) {
+			console.log("static file:", ctx.path, status);
+			if(status == 304) {
+				ctx.status = 304;
+			}else if(status === 302) {
 				if(file.substr(-1) === '/') {
 					file += "index.html";
 				}else{
