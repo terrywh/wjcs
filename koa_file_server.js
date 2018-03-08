@@ -25,16 +25,19 @@ module.exports = function(www) {
 					}else if(stats.isDirectory()) {
 						resolve(302);
 					}else{
-						ctx.lastModified = stats.mtime;
-						if(Date.parse(ctx.headers["if-modified-since"]) < ctx.lastModified.getTime()) {
-							resolve(200);
-						}else{
+						let since = parseInt(Date.parse(ctx.headers["if-modified-since"])/1000),
+							mtime = parseInt(stats.mtime.getTime()/1000);
+						console.log(since, mtime, since >= mtime);
+						if(since && ctx.headers["if-modified-since"] && since >= mtime) {
 							resolve(304);
+						}else{
+							ctx.lastModified = stats.mtime;
+							resolve(200);
 						}
 					}
 				});
 			});
-			console.log("static file:", ctx.path, status);
+			
 			if(status == 304) {
 				ctx.status = 304;
 			}else if(status === 302) {
