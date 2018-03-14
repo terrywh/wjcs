@@ -27,7 +27,7 @@ module.exports = function(www) {
 					}else{
 						let since = parseInt(Date.parse(ctx.headers["if-modified-since"])/1000),
 							mtime = parseInt(stats.mtime.getTime()/1000);
-						console.log(since, mtime, since >= mtime);
+						
 						if(since && ctx.headers["if-modified-since"] && since >= mtime) {
 							resolve(304);
 						}else{
@@ -48,6 +48,7 @@ module.exports = function(www) {
 				}
 			}else if(status === 200) {
 				ctx.type = mtypes[path.extname(file)] || "application/octet-stream";
+				ctx.set("Cache-Control", "no-cache, must-revalidate");
 				ctx.body = fs.createReadStream(file);
 			}else if(status === 403){
 				ctx.status = status;
