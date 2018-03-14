@@ -1,4 +1,19 @@
-exports.invoke = function(path, query, body, method) {
+"use strict";
+
+(function(exports) {
+	function build_url(path, query) {
+		if(typeof query === "object") {
+			let str = "";
+			for(let name in query) {
+				str += name + "=" + encodeURIComponent(query[name]) + "&";
+			}
+			query = str;
+		}
+		if(path.indexOf("?") > -1) path += "&" + query;
+		else path += "?" + query;
+		return path;
+	}
+	exports.invoke = function(path, query, body, method) {
 		return new Promise(function(resolve, reject) {
 			let x = new XMLHttpRequest();
 			x.open(method ? method : (body ? "POST" : "GET"), build_url(path, query), true);
@@ -22,3 +37,4 @@ exports.invoke = function(path, query, body, method) {
 			x.send(body);
 		});
 	};
+})(window);
