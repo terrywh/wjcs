@@ -1,6 +1,6 @@
 "use strict";
 
-const colorlog = function (app, module, action) {
+const debug = function (app, module, action) {
     let argv = Array.from(arguments);
     
     argv.splice(0, 2, "%c[%c" + app + "%c] [%c" + module + "%c/%c" + action +"%c]",
